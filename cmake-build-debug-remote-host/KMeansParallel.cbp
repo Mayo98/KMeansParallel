@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="KMeansParallel"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="KMeansParallel">
+				<Option output="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/KMeansParallel" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/cuda-11.8/targets/x86_64-linux/include"/>
+					<Add directory="/usr/include/c++/11"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/11"/>
+					<Add directory="/usr/include/c++/11/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/11/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 KMeansParallel"/>
+					<CompileFile command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="KMeansParallel/fast">
+				<Option output="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/KMeansParallel" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/local/cuda-11.8/targets/x86_64-linux/include"/>
+					<Add directory="/usr/include/c++/11"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/11"/>
+					<Add directory="/usr/include/c++/11/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/11/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 KMeansParallel/fast"/>
+					<CompileFile command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/gmake -j64 -f &quot;/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/cmake-build-debug-remote-host/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/Cluster.cpp">
+			<Option target="KMeansParallel"/>
+		</Unit>
+		<Unit filename="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/Cluster.h">
+			<Option target="KMeansParallel"/>
+		</Unit>
+		<Unit filename="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/Point.cpp">
+			<Option target="KMeansParallel"/>
+		</Unit>
+		<Unit filename="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/Point.h">
+			<Option target="KMeansParallel"/>
+		</Unit>
+		<Unit filename="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/SequentialKMeans.cpp">
+			<Option target="KMeansParallel"/>
+		</Unit>
+		<Unit filename="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/SequentialKMeans.h">
+			<Option target="KMeansParallel"/>
+		</Unit>
+		<Unit filename="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/main.cu">
+			<Option target="KMeansParallel"/>
+		</Unit>
+		<Unit filename="/data01/pc24giamag/tmp/tmp/tmp.tUZHtGpgZc/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
