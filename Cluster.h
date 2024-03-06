@@ -12,11 +12,11 @@
 class Cluster {
 private:
     int clusterId;
-    std::vector<double> centroid;
+    std::vector<float> centroid;
     std::vector<int>pointsIds;
 
 public:
-    Cluster(int clusterId, int idxP, double centX, double centY);
+    Cluster(int clusterId, int idxP, float centX, float centY);
 
     void addPoint(int idx);
     bool removePoint(int idx);
@@ -24,11 +24,11 @@ public:
 
     int getId();
 
-    double getIdByPos(int pos);
+    float getIdByPos(int pos);
     int getSize();
-    double getCentroidByPos(int pos);
+    float getCentroidByPos(int pos);
 
-    void setCentroid(double x, double y) ;
+    void setCentroid(float x, float y) ;
 };
 
 

@@ -17,11 +17,11 @@ class Point
 {
 private:
     int dimensions ;
-    //std::vector<double> values;
+    //std::vector<float> values;
     void lineToVec(std::string& line);
 
-    std::vector<double>xval;
-    std::vector<double>yval;
+    std::vector<float>xval;
+    std::vector<float>yval;
     std::vector<int>clusters;
 
 public:
@@ -31,9 +31,9 @@ public:
     int getCluster(int idx);
     void setCluster(int idx, int val);
     int getNumPoints();
-    double getXval(int pos);
+    float getXval(int pos);
     void initCluster(int dimensions);
-    double getYval(int pos);
+    float getYval(int pos);
 };
 
 #endif  // POINT_H

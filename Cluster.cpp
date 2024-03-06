@@ -7,7 +7,7 @@
 #include "Point.h"
 #include <iostream>
 #include <fstream>
-Cluster::Cluster(int clusterId, int idxP, double centX, double centY)
+Cluster::Cluster(int clusterId, int idxP, float centX, float centY)
 {
     this->clusterId = clusterId;
     this->centroid.push_back(centX);
@@ -43,7 +43,7 @@ bool Cluster::removePoint(int idx)
 
 int Cluster::getId() { return clusterId; }
 
-double Cluster::getIdByPos(int pos) { return pointsIds[pos]; }
+float Cluster::getIdByPos(int pos) { return pointsIds[pos]; }
 
 /////Metodi con mappa
 /*
@@ -52,15 +52,15 @@ double Cluster::getIdByPos(int pos) { return pointsIds[pos]; }
     //pointsX.erase(pointsX.begin() + idx);
     //pointsY.erase(pointsY.begin() + idx);
 }
-  double Cluster::getSumX() {
-    double sum = 0.0;
+  float Cluster::getSumX() {
+    float sum = 0.0;
     for(auto&coppia: points){
         sum+= coppia.second.first;
     }
     return sum;
 }
-double Cluster::getSumY() {
-    double sum = 0.0;
+float Cluster::getSumY() {
+    float sum = 0.0;
     for(auto&coppia: points){
         sum+= coppia.second.second;
     }
@@ -99,6 +99,6 @@ void Cluster::saveResult(std::ofstream& outfile, std::string path, std::string p
 
 int Cluster::getSize() { return pointsIds.size(); }
 
-double Cluster::getCentroidByPos(int pos) { return centroid[pos]; }
+float Cluster::getCentroidByPos(int pos) { return centroid[pos]; }
 
-void Cluster::setCentroid(double x, double y) { this->centroid[0] = x; this->centroid[1] = y; }
+void Cluster::setCentroid(float x, float y) { this->centroid[0] = x; this->centroid[1] = y; }

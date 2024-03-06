@@ -22,7 +22,7 @@ static bool first = true;
 
 
 
-std::vector<int>indexGenerator(int K, int total_points){
+std::vector<int>index_Generator(int K, int total_points){
     //mem punti gia usati per init cluster
     if (first) {
         for (int i = 0; i < K; i++) {
@@ -120,7 +120,7 @@ void SequentialKMeans::run() {
     bool exit = false;
     double x, y;
 
-    used_pointIds = indexGenerator(K, total_points);
+    used_pointIds = index_Generator(K, total_points);
     for (int i = 0; i < K; i++) {
 
         x = all_points.getXval(used_pointIds[i]);
@@ -219,8 +219,8 @@ void SequentialKMeans::run() {
     // Scrivo i risultati del clustering su file (centroidi finali)
     std::ofstream outfile;
     std::cout << std::filesystem::current_path().string() << std::endl;
-    std::cout<<output_dir+ "/" +"clusters.txt"<<std::endl;
-    outfile.open(output_dir + "/" +"clusters.txt");
+    std::cout<<output_dir+ "/" +"clustersS.txt"<<std::endl;
+    outfile.open(output_dir + "/" +"clustersS.txt");
     if (outfile.is_open()) {
         for (int i = 0; i < K; i++) {
             //std::cout <<  i << " cluster contiene: "<< clusters[i].getSize() <<std::endl;
@@ -240,7 +240,7 @@ void SequentialKMeans::run() {
 
 
 
-    outfile.open(output_dir + "/" + "clustering.txt");
+    outfile.open(output_dir + "/" + "clusteringS.txt");
     for (int i = 0; i < total_points; i++) {
         // indice cluster è ID-1
         if (outfile.is_open()) {

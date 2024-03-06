@@ -12,7 +12,7 @@
 using namespace std;
 
 void Point::lineToVec(std::string& dir) {
-    std::vector<double> values;
+    std::vector<float> values;
     std::string tmp = "";
     string line;
     std::cout << std::filesystem::current_path().string() <<"Ciao" << std::endl;
@@ -64,7 +64,7 @@ if ((48 <= static_cast<int>(line[i]) && static_cast<int>(line[i]) <= 57) || line
 }
 else if (!tmp.empty())
 {
-    double value = std::stod(tmp);
+    float value = std::stod(tmp);
     xval.push_back(value);
     tmp = ""; // Reimposta tmp dopo aver salvato il valore in xval
 
@@ -74,7 +74,7 @@ else if (!tmp.empty())
 
 if (!tmp.empty())
 {
-    double value = std::stod(tmp);
+    float value = std::stod(tmp);
     yval.push_back(value);
     tmp = ""; // Reimposta tmp dopo aver salvato il valore in yval
 }
@@ -118,11 +118,11 @@ void Point::setCluster(int idx, int val)
     clusters[idx] = val;        //setto il nuovo id del cluster per il punto
 }
 
-double Point::getXval(int pos)
+float Point::getXval(int pos)
 {
     return xval[pos];
 }
-double Point::getYval(int pos)
+float Point::getYval(int pos)
 {
     return yval[pos];
 }
