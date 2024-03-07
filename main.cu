@@ -13,7 +13,7 @@
 #include <algorithm>
 
 
-#define N 400000
+#define N 800000
 #define TPB 128
 static std::vector<int> used_pointIds;
 using namespace std;
@@ -144,8 +144,6 @@ private:
 public:
     ParallelKMeans(int K, int iterations, std::string output_dir, std::string input_dir);
     void run();
-    void run_parallel(std::vector<Point> &all_points);
-    void run_parallel2(std::vector<Point> &all_points);
     ~ParallelKMeans() {
         // Releases all the remaining resources allocated on the GPU
         cudaDeviceReset();
@@ -163,7 +161,7 @@ ParallelKMeans::ParallelKMeans(int K, int iterations, std::string output_dir, st
 void ParallelKMeans::run() {
     total_points = all_points.getDimensions();  //num totale di punti
     float centroids_shifts_sum = 0;
-    float max_tollerance = 0.0001;
+    float max_tollerance = 0.001;
     //alloco memoria Host
 
     float *h_xval = (float *) malloc(N * sizeof(float));
@@ -282,7 +280,7 @@ void ParallelKMeans::run() {
                 deltaY = h_centroidY[i] - h_prevCentroidY[i];
                 double percentageShiftX = std::abs((deltaX / h_centroidX[i]) * 100.0);
                 double percentageShiftY = std::abs((deltaY / h_centroidY[i]) * 100.0);
-                std::cout<< "perX: "<< percentageShiftX << " percY: "<< percentageShiftY<< std::endl;
+                //std::cout<< "perX: "<< percentageShiftX << " percY: "<< percentageShiftY<< std::endl;
                 if(percentageShiftX > max_tollerance || percentageShiftY > max_tollerance)
                 {
                     done = false;
@@ -408,7 +406,7 @@ float averageSeqExecutions(int K, int iters, std::string output_dir, std::string
 
 int main() {
     std::string output_dir = "../cmake-build-debug/cluster_details";   //dir output
-    int K = 3;                               //numero cluster
+    int K = 4;                               //numero cluster
     std::string input_dir= "input1.txt";
 
     // Avvio il clustering
@@ -416,12 +414,12 @@ int main() {
 
 
     auto mediaS = averageSeqExecutions(K, iters, output_dir, input_dir);
-    auto mediaP = averageParallelExecutions(K, iters, output_dir, input_dir);
+    //auto mediaP = averageParallelExecutions(K, iters, output_dir, input_dir);
     std::cout << "Media esecuzione Sequenziale : " << mediaS << std::endl;
-    std::cout << "Media esecuzione Parallela : " << mediaP << std::endl;
+   // std::cout << "Media esecuzione Parallela : " << mediaP << std::endl;
 
-    float speedup = static_cast<float>(mediaS) / static_cast<float>(mediaP);
-    std::cout << "Speedup: " << speedup << std::endl;
+    //float speedup = static_cast<float>(mediaS) / static_cast<float>(mediaP);
+    //std::cout << "Speedup: " << speedup << std::endl;
 
     return 0;
 }

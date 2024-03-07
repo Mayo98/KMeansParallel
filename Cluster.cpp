@@ -23,20 +23,21 @@ void Cluster::addPoint(int idxP)
     //pointsY.push_back(y);
 }
 
-bool Cluster::removePoint(int idx)
+void Cluster::removePoint(int idx)
 {
 
     int size = pointsIds.size();
-
+    std::cout<<"punti init : "<< size<<std::endl;
     for (int i = 0; i < size; i++)
     {
         if (pointsIds[i] == idx)
         {
             pointsIds.erase(pointsIds.begin() + i);
-            return true;
+            std::cout<<"punti final : "<< pointsIds.size()<<std::endl;
+            return;
         }
     }
-    return false;
+    return;
 }
 
 //void Cluster::removeAllPoints() { pointsX.clear(); pointsY.clear(); }

@@ -20,8 +20,6 @@ static std::vector<int> used_pointIds;
 static bool first = true;
 
 
-
-
 std::vector<int>index_Generator(int K, int total_points){
     //mem punti gia usati per init cluster
     if (first) {
@@ -45,23 +43,40 @@ std::vector<int>index_Generator(int K, int total_points){
 }
 
 int SequentialKMeans::getNearestClusterId(int idx) {
-    double sum = 0.0, min_dist;
+    float sum = 0.0;
+    float min_dist = INFINITY;
     int NearestClusterId;
+    float dist;
+    for (int i = 0; i < K; i++) {
+        sum = 0.0;
+        sum += pow(clusters[i].getCentroidByPos(0) - all_points.getXval(idx), 2.0);
+        sum += pow(clusters[i].getCentroidByPos(1) - all_points.getYval(idx), 2.0);
+        dist = sqrt(sum);
+        if (dist < min_dist) {
+            min_dist = dist;
+            NearestClusterId = i;
+        }
 
-
+    }
+    return NearestClusterId;
+}
+/*
     //somma delle differenze quadratiche
     sum += pow(clusters[0].getCentroidByPos(0) - all_points.getXval(idx), 2.0);
     sum += pow(clusters[0].getCentroidByPos(1) - all_points.getYval(idx), 2.0);
 
 
     //calcolo distanza euclidea
-    min_dist = sqrt(sum);
-
+    dist = sqrt(sum);
+    if (dist < min_dist) {
+        min_dist = dist;
+        NearestClusterId = clusters[i].getId();
+    }
     NearestClusterId = clusters[0].getId();
 
     //eseguo lo stesso procedimento per i k-1 cluster rimanenti, se trovo min_dist migliore aggiorno
     for (int i = 1; i < K; i++) {
-        double dist;
+        float dist;
         sum = 0.0;
 
         sum += pow(clusters[i].getCentroidByPos(0) - all_points.getXval(idx), 2.0);
@@ -77,9 +92,9 @@ int SequentialKMeans::getNearestClusterId(int idx) {
     }
 
     return NearestClusterId;
-}
+}*/
 /*int KMeans::getNearestClusterId(int idx) {
-    double sum, min_dist = 80000000, dist;
+    float sum, min_dist = 80000000, dist;
     int NearestClusterId;
 
     for (int i = 0; i < K; i++) {
@@ -107,18 +122,21 @@ SequentialKMeans::SequentialKMeans(int K, int iterations, std::string output_dir
     this->output_dir = output_dir;
     //this->all_points = Point(input_dir);
 }
-///////////////////////////////// SEQUENZIALE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+///////////////////////////////// SEQUENZIALE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ TODO: termina prevCentroids
 
 void SequentialKMeans::run() {
     total_points = all_points.getDimensions();  //num totale di punti
-    dimensions = 2;   //dimensione punto
 
+    dimensions = 2;   //dimensione punto
+    float max_tollerance = 0.0001;
+    std::vector<float>prevCentroidsX;
+    std::vector<float>prevCentroidsY;
     //std::cout<<"dimensione all_points: "<<total_points<<" dimensione clusters: "<<all_points.getDimClusters()<<" punto 1: "<<all_points.getYval(1)<< std::endl;
     // Inizializzo Clusters
     std::vector<int> used_pointIds;  //mem punti gia usati per init cluster
 
     bool exit = false;
-    double x, y;
+    float x, y;
 
     used_pointIds = index_Generator(K, total_points);
     for (int i = 0; i < K; i++) {
@@ -127,31 +145,12 @@ void SequentialKMeans::run() {
         y = all_points.getYval(used_pointIds[i]);
         all_points.setCluster(used_pointIds[i], i);
         Cluster cluster(i,used_pointIds[i], x, y);  //creo un cluster avente centroide il punto attuale
+        prevCentroidsX.push_back(x);
+        prevCentroidsY.push_back((y));
         clusters.push_back(cluster);
+
     }
-    /*
 
-   for (int i = 0; i < K; i++) {
-       while (true) {
-           int index = rand() % total_points;
-
-           //check se index gia usato per un altro cluster
-           if (find(used_pointIds.begin(), used_pointIds.end(), index) ==
-               used_pointIds.end()) {
-               used_pointIds.push_back(index);
-
-               x = all_points.getXval(used_pointIds[i]);
-               y = all_points.getYval(used_pointIds[i]);
-               all_points.setCluster(index, i);
-               Cluster cluster(i,index, x, y);
-                 //creo un cluster con avete centroide il punto attuale
-               clusters.push_back(cluster);
-               break;
-           }
-       }
-   }
-
-   */
     std::cout << "Clusters Inizializzati = " << clusters.size() << std::endl
               << std::endl;
 
@@ -166,7 +165,7 @@ void SequentialKMeans::run() {
         bool done = true;
 
         // Aggiungo punti al cluster più vicino
-
+        int j = 0;
 //#pragma omp parallel for reduction(&&: done) num_threads(16)
         for (int i = 0; i < total_points; i++) {
             int currentClusterId = all_points.getCluster(i);   //ottengo clusterID punto corrente
@@ -174,22 +173,25 @@ void SequentialKMeans::run() {
 
             //se il cluster del punto != dal cluster più vicino, setto sul punto il cluster giusto
             if (currentClusterId != nearestClusterId) {
+                j++;
                 all_points.setCluster(i, nearestClusterId);
                 clusters[nearestClusterId].addPoint(i);
-                if(currentClusterId != -1) {
+                if(currentClusterId != -1) {  //rimuovo l'indice punto dal cluster precedente
                     clusters[currentClusterId].removePoint(i);
                 }
-                done = false;
+                //done = false;
+
             }
         }
+
 
         // Ricalcolo nuovi Centroidi
         int somma = 0;
         for (int i = 0; i < K; i++) {
-            //std::cout<<"Ci sono"<<std::endl;
+
             int ClusterSize = clusters[i].getSize();
 
-            double sumX = 0.0, sumY = 0.0;
+            float sumX = 0.0, sumY = 0.0;
 
             if (ClusterSize > 0) {
                 for (int p = 0; p < ClusterSize; p++) {
@@ -197,12 +199,32 @@ void SequentialKMeans::run() {
                     sumY += all_points.getYval(clusters[i].getIdByPos(p));
                 }
                 clusters[i].setCentroid(sumX / ClusterSize, sumY / ClusterSize);
+                std::cout<<clusters[i].getCentroidByPos(0)<<"  "<<clusters[i].getCentroidByPos(1)<<std::endl;
             }
-            std::cout<<"Cluster "<<i <<": "  <<clusters[i].getSize() << std::endl;
+            //std::cout<<"Cluster "<<i <<": "  <<clusters[i].getSize() << std::endl;
             somma += clusters[i].getSize();
         }
-        std::cout<<"elementi Clusters "<< somma << std::endl;
 
+
+        //std::cout<<"elementi Clusters "<< somma << std::endl;
+        float deltaX, deltaY = 0;
+        for(int i= 0; i < K; i++)
+        {
+            deltaX = clusters[i].getCentroidByPos(0) - prevCentroidsX[i];
+            deltaY = clusters[i].getCentroidByPos(1) - prevCentroidsY[i];
+            double percentageShiftX = std::abs((deltaX / clusters[i].getCentroidByPos(0)) * 100.0);
+            double percentageShiftY = std::abs((deltaY / clusters[i].getCentroidByPos(1))*100);
+            //std::cout<< "perX: "<< percentageShiftX << " percY: "<< percentageShiftY<< std::endl;
+            if(percentageShiftX > max_tollerance || percentageShiftY > max_tollerance)
+            {
+                done = false;
+
+            }
+        }
+        for (int i = 0; i < K; i++) {
+            prevCentroidsX[i] = clusters[i].getCentroidByPos(0);
+            prevCentroidsY[i] = clusters[i].getCentroidByPos(1);
+        }
         //interrompo se clustering completo o num iterazioni raggiunto
         if (done || iter >= iters) {
             std::cout << "Clustering completed in iteration : " << iter << std::endl
@@ -237,7 +259,6 @@ void SequentialKMeans::run() {
     } else {
         std::cout << "Error: Unable to write to clusters.txt";
     }
-
 
 
     outfile.open(output_dir + "/" + "clusteringS.txt");
