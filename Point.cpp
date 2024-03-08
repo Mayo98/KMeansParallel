@@ -12,10 +12,10 @@
 using namespace std;
 
 void Point::lineToVec(std::string& dir) {
-    std::vector<float> values;
+    //std::vector<float> values;
     std::string tmp = "";
     string line;
-    std::cout << std::filesystem::current_path().string() <<"Ciao" << std::endl;
+    //std::cout << std::filesystem::current_path().string() <<"Ciao" << std::endl;
     ifstream infile("../cmake-build-debug/input1.txt");
     if (!infile.is_open()) {
         cout << "Error: Failed to open file." << endl;
@@ -29,14 +29,14 @@ void Point::lineToVec(std::string& dir) {
 
             } else if (!tmp.empty()) {
 
-                values.push_back(std::stod(tmp));
+                //values.push_back(std::stod(tmp));
                 xval.push_back(std::stod(tmp));
                 tmp = "";
             }
         }
         if (!tmp.empty()) {
 
-            values.push_back(std::stod(tmp));
+            //values.push_back(std::stod(tmp));
             yval.push_back(std::stod(tmp));
             tmp = "";
         }
@@ -115,7 +115,9 @@ int Point::getCluster(int idx)
 int Point::getDimClusters(){return clusters.size();}
 void Point::setCluster(int idx, int val)
 {
+    //std::cout<<"cluster prec: "<<clusters[idx]<<std::endl;
     clusters[idx] = val;        //setto il nuovo id del cluster per il punto
+    //std::cout<<"cluster nuovo: "<<clusters[idx]<<std::endl;
 }
 
 float Point::getXval(int pos)

@@ -28,7 +28,8 @@ private:
     int getNearestClusterId_Parallel(Point point);
 
 public:
-    SequentialKMeans(int K, int iterations, std::string output_dir, std::string input_dir);
+    SequentialKMeans(int K, int iterations, std::string output_dir, std::string input_dir, std::vector<int>used_pointIds);
+    std::vector<int>used_pointIds;
     void run();
     void run_parallel(std::vector<Point> &all_points);
     void run_parallel2(std::vector<Point> &all_points);

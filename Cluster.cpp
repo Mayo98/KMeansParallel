@@ -7,14 +7,14 @@
 #include "Point.h"
 #include <iostream>
 #include <fstream>
-Cluster::Cluster(int clusterId, int idxP, float centX, float centY)
+Cluster::Cluster(int clusterId, float centX, float centY)
 {
     this->clusterId = clusterId;
     this->centroid.push_back(centX);
     this->centroid.push_back(centY);
-    this->addPoint(idxP);
+    this->clusterSize++;
 }
-
+/*
 void Cluster::addPoint(int idxP)
 {
     pointsIds.push_back(idxP);
@@ -22,7 +22,12 @@ void Cluster::addPoint(int idxP)
     //pointsX.push_back(x);
     //pointsY.push_back(y);
 }
-
+*/
+void Cluster::addPoint()
+{
+    this->clusterSize++;
+}
+/*
 void Cluster::removePoint(int idx)
 {
 
@@ -39,7 +44,11 @@ void Cluster::removePoint(int idx)
     }
     return;
 }
-
+*/
+void Cluster::removePoint()
+{
+    this->clusterSize--;
+}
 //void Cluster::removeAllPoints() { pointsX.clear(); pointsY.clear(); }
 
 int Cluster::getId() { return clusterId; }
@@ -99,7 +108,7 @@ void Cluster::saveResult(std::ofstream& outfile, std::string path, std::string p
  */ /////////
 
 int Cluster::getSize() { return pointsIds.size(); }
-
+int Cluster::getClusterSize() {return clusterSize;}
 float Cluster::getCentroidByPos(int pos) { return centroid[pos]; }
-
+void Cluster::setSize(int size ) {this->clusterSize = size;}
 void Cluster::setCentroid(float x, float y) { this->centroid[0] = x; this->centroid[1] = y; }

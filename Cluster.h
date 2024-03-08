@@ -14,15 +14,17 @@ private:
     int clusterId;
     std::vector<float> centroid;
     std::vector<int>pointsIds;
-
+    int clusterSize = 0;
 
 public:
-    Cluster(int clusterId, int idxP, float centX, float centY);
-
-    void addPoint(int idx);
-    void removePoint(int idx);
-
-
+    //Cluster(int clusterId, int idxP, float centX, float centY);
+    Cluster(int clusterId, float centX, float centY);
+    //void addPoint(int idx);
+    void addPoint();
+    //void removePoint(int idx);
+    void removePoint();
+    void setSize(int size);
+    int getClusterSize();
     int getId();
 
     float getIdByPos(int pos);

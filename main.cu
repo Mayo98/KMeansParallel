@@ -13,7 +13,7 @@
 #include <algorithm>
 
 
-#define N 800000
+#define N 1000000
 #define TPB 128
 static std::vector<int> used_pointIds;
 using namespace std;
@@ -142,7 +142,8 @@ private:
     int getNearestClusterId_Parallel(Point point);
 
 public:
-    ParallelKMeans(int K, int iterations, std::string output_dir, std::string input_dir);
+    ParallelKMeans(int K, int iterations, std::string output_dir, std::string input_dir, std::vector<int>used_pointIds);
+    std::vector<int> used_pointIds;
     void run();
     ~ParallelKMeans() {
         // Releases all the remaining resources allocated on the GPU
@@ -152,10 +153,11 @@ public:
 /////
 /////Implementazione costruttore
 /////
-ParallelKMeans::ParallelKMeans(int K, int iterations, std::string output_dir, std::string input_dir):all_points(input_dir) {
+ParallelKMeans::ParallelKMeans(int K, int iterations, std::string output_dir, std::string input_dir, std::vector<int>used_pointIds):all_points(input_dir) {
     this->K = K;
     this->iters = iterations;
     this->output_dir = output_dir;
+    this->used_pointIds = used_pointIds;
     //this->all_points = Point(input_dir);
 }
 void ParallelKMeans::run() {
@@ -205,20 +207,22 @@ void ParallelKMeans::run() {
 
     //std::cout<<"dimensione all_points: "<<total_points<<" dimensione clusters: "<<all_points.getDimClusters()<<" punto 1: "<<all_points.getYval(1)<< std::endl;
     // Inizializzo Clusters
-    std::vector<int> used_pointIds;  //mem punti gia usati per init cluster
+    //std::vector<int> used_pointIds;//mem punti gia usati per init cluster
 
     bool exit = false;
     float x, y;
 
-    used_pointIds = indexGenerator(K, N);
+    //used_pointIds = indexGenerator(K, N);
     for (int i = 0; i < K; i++) {
 
         h_centroidX[i] = h_xval[used_pointIds[i]];
         h_centroidY[i] = h_yval[used_pointIds[i]];
         //x = all_points.getXval(used_pointIds[i]);
         //y = all_points.getYval(used_pointIds[i]);
+
         h_clusterVal[used_pointIds[i]] = i;
         h_clusterSize[i] = 0;
+        std::cout<<"init: x:"<< h_centroidX[i]<<" y: "<<h_centroidY[i]<<std::endl;
     }
     std::cout << "Clusters Inizializzati = " << std::endl
               << std::endl;
@@ -359,14 +363,14 @@ void ParallelKMeans::run() {
 
 
 
-float averageParallelExecutions(int K, int iters, std::string output_dir, std::string input_dir)
+float averageParallelExecutions(int K, int iters, std::string output_dir, std::string input_dir, std::vector<int> used_pointIds)
 {
     float mediaS, mediaP;
     float sum;
 
     for(int i  = 0; i < 2; i++ ) {
         auto start = std::chrono::high_resolution_clock::now();
-        ParallelKMeans kmeans(K, iters, output_dir, input_dir);
+        ParallelKMeans kmeans(K, iters, output_dir, input_dir, used_pointIds);
         //kmeans.run_parallel2(all_points);
         kmeans.run();
         //float end = omp_get_wtime( );
@@ -382,14 +386,14 @@ float averageParallelExecutions(int K, int iters, std::string output_dir, std::s
     return mediaP;
 }
 
-float averageSeqExecutions(int K, int iters, std::string output_dir, std::string input_dir)
+float averageSeqExecutions(int K, int iters, std::string output_dir, std::string input_dir, std::vector<int> used_pointIds)
 {
     float mediaS;
     float sum;
 
     for(int i  = 0; i < 2; i++ ) {
         auto start = std::chrono::high_resolution_clock::now();
-        SequentialKMeans kmeans(K, iters, output_dir, input_dir);
+        SequentialKMeans kmeans(K, iters, output_dir, input_dir, used_pointIds);
         kmeans.run();
         //float end = omp_get_wtime( );
         auto end = std::chrono::high_resolution_clock::now();
@@ -412,14 +416,14 @@ int main() {
     // Avvio il clustering
     int iters = 100;
 
-
-    auto mediaS = averageSeqExecutions(K, iters, output_dir, input_dir);
-    //auto mediaP = averageParallelExecutions(K, iters, output_dir, input_dir);
+    std::vector<int> used_pointIds = indexGenerator(K, N);
+    auto mediaS = averageSeqExecutions(K, iters, output_dir, input_dir, used_pointIds);
+    auto mediaP = averageParallelExecutions(K, iters, output_dir, input_dir, used_pointIds);
     std::cout << "Media esecuzione Sequenziale : " << mediaS << std::endl;
-   // std::cout << "Media esecuzione Parallela : " << mediaP << std::endl;
+    //std::cout << "Media esecuzione Parallela : " << mediaP << std::endl;
 
-    //float speedup = static_cast<float>(mediaS) / static_cast<float>(mediaP);
-    //std::cout << "Speedup: " << speedup << std::endl;
+    float speedup = static_cast<float>(mediaS) / static_cast<float>(mediaP);
+    std::cout << "Speedup: " << speedup << std::endl;
 
     return 0;
 }
