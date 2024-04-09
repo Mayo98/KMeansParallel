@@ -14,9 +14,44 @@
 
 
 #define N 1000000
-#define TPB 128
+#define TPB 2
 static std::vector<int> used_pointIds;
 using namespace std;
+
+int* get_iteration_threads_and_blocks(int device_index, int num_data_points, int data_points_batch_size) {
+    // Gets the total number of THREADS available on the gpu
+    cudaDeviceProp deviceProp{};
+    cudaGetDeviceProperties(&deviceProp, device_index);
+    int threadsPerSM = deviceProp.maxThreadsPerMultiProcessor;
+    int SMCount = deviceProp.multiProcessorCount;
+    int TOTAL_THREADS = threadsPerSM * SMCount;
+
+    // This is the number of threads that will always be left unused so that the OS and the graphical environment
+    // can work correctly.
+    // This assumes the current process to be the only one making intensive operations on the GPU
+    int FREE_THREADS = TOTAL_THREADS * 30 / 100;
+    int AVAILABLE_THREADS = TOTAL_THREADS - FREE_THREADS;
+    // Number of THREADS per block
+    int THREADS = 256;
+    int block_data_size = num_data_points + THREADS - 1;
+    int cluster_iterations = 1;
+    // Used to handle any number of data_points dynamically
+    if(data_points_batch_size > 0 && num_data_points > data_points_batch_size || num_data_points > AVAILABLE_THREADS) {
+        if(data_points_batch_size > AVAILABLE_THREADS || data_points_batch_size <= 0 && num_data_points > AVAILABLE_THREADS)
+            data_points_batch_size = ((AVAILABLE_THREADS / THREADS) - 2) * THREADS;
+
+        block_data_size = data_points_batch_size + THREADS - 1;
+    } else {
+        data_points_batch_size = num_data_points;
+    }
+
+    cluster_iterations = std::ceil(static_cast<double>(num_data_points) / static_cast<double>(data_points_batch_size));
+    // Every element remaining after dividing is allocated to an additional block
+    int BLOCKS = block_data_size / THREADS;
+
+    return new int[5]{THREADS, BLOCKS, cluster_iterations, TOTAL_THREADS, data_points_batch_size};
+}
+
 
 __host__ void readPoints(float *h_xval, float *h_yval, int* h_clusters) {
 
@@ -53,11 +88,10 @@ __host__ void readPoints(float *h_xval, float *h_yval, int* h_clusters) {
        h_clusters[j] = -1; //inizializzo anche il vettore clusters a -1
        j++;
     }
-    //std::cout << "dim clusters: " << h_clusters << std::endl;
+
 
     cout << "\nDataset fetched!" << endl
          << endl;
-    //std::cout << "Punti totali letti : " << xval.size() << std::endl;
 }
 
 
@@ -146,7 +180,7 @@ public:
     std::vector<int> used_pointIds;
     void run();
     ~ParallelKMeans() {
-        // Releases all the remaining resources allocated on the GPU
+        // rilascio tutte le risorse allocate sulla gpu
         cudaDeviceReset();
     }
 };
@@ -164,6 +198,7 @@ void ParallelKMeans::run() {
     total_points = all_points.getDimensions();  //num totale di punti
     float centroids_shifts_sum = 0;
     float max_tollerance = 0.001;
+
     //alloco memoria Host
 
     float *h_xval = (float *) malloc(N * sizeof(float));
@@ -217,8 +252,7 @@ void ParallelKMeans::run() {
 
         h_centroidX[i] = h_xval[used_pointIds[i]];
         h_centroidY[i] = h_yval[used_pointIds[i]];
-        //x = all_points.getXval(used_pointIds[i]);
-        //y = all_points.getYval(used_pointIds[i]);
+
 
         h_clusterVal[used_pointIds[i]] = i;
         h_clusterSize[i] = 0;
@@ -345,6 +379,7 @@ void ParallelKMeans::run() {
     }
     outfile.close();
 
+    //rilascio risorse
     cudaFree(d_xval);
     cudaFree(d_yval);
     cudaFree(d_clusterVal);
@@ -368,7 +403,7 @@ float averageParallelExecutions(int K, int iters, std::string output_dir, std::s
     float mediaS, mediaP;
     float sum;
 
-    for(int i  = 0; i < 2; i++ ) {
+    for(int i  = 0; i < 3; i++ ) {
         auto start = std::chrono::high_resolution_clock::now();
         ParallelKMeans kmeans(K, iters, output_dir, input_dir, used_pointIds);
         //kmeans.run_parallel2(all_points);
@@ -382,7 +417,7 @@ float averageParallelExecutions(int K, int iters, std::string output_dir, std::s
         std::cout << "<<------------------------------>>" << std::endl;
 
     }
-    mediaP = static_cast<float>(sum)/2;
+    mediaP = static_cast<float>(sum)/3;
     return mediaP;
 }
 
@@ -391,7 +426,7 @@ float averageSeqExecutions(int K, int iters, std::string output_dir, std::string
     float mediaS;
     float sum;
 
-    for(int i  = 0; i < 2; i++ ) {
+    for(int i  = 0; i < 3; i++ ) {
         auto start = std::chrono::high_resolution_clock::now();
         SequentialKMeans kmeans(K, iters, output_dir, input_dir, used_pointIds);
         kmeans.run();
@@ -404,7 +439,7 @@ float averageSeqExecutions(int K, int iters, std::string output_dir, std::string
         std::cout << "<<------------------------------>>" << std::endl;
 
     }
-    mediaS = static_cast<float>(sum)/2;
+    mediaS = static_cast<float>(sum)/3;
     return mediaS;
 }
 

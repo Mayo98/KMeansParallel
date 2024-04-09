@@ -137,13 +137,12 @@ void SequentialKMeans::run() {
             }
         }
         */
-        for (int i = total_points-1; i > 0; i--) {
+        for (int i = 0; i < total_points; i++) {
             int currentClusterId = all_points.getCluster(i);   //ottengo clusterID punto corrente
             int nearestClusterId = getNearestClusterId(i);  //cluster più vicino
 
             //se il cluster del punto != dal cluster più vicino, setto sul punto il cluster giusto
             if (currentClusterId != nearestClusterId) {
-                j++;
                 all_points.setCluster(i, nearestClusterId);
                 //clusters[nearestClusterId].addPoint();
                 if(currentClusterId != -1) {  //rimuovo l'indice punto dal cluster precedente
@@ -179,8 +178,6 @@ void SequentialKMeans::run() {
 */
         // Ricalcolo nuovi Centroidi
 
-        //float *clusterSumX = (float *) malloc(K * sizeof(float));
-        //float *clusterSumY = (float *) malloc(K * sizeof(float));
         for(int i = 0; i< K; i++)
         {
             clusterSumX[i] = 0;
@@ -188,7 +185,7 @@ void SequentialKMeans::run() {
         }
 
         int clusterId;
-        for (int i = total_points-1; i > 0; i--)
+        for (int i = 0; i < total_points; i++)
         {
             x = all_points.getXval(i);
             y = all_points.getYval(i);
@@ -200,11 +197,8 @@ void SequentialKMeans::run() {
 
         for(int i = 0; i <K; i++)
         {
-            //std::cout<< "cluster: "<<clusters[i].getId()<<" centroidX: "<<clusters[i].getCentroidByPos(0)<<" centroidY: "<<clusters[i].getCentroidByPos(1)<<" "<<clusters[i].getClusterSize()<<std::endl;
             clusters[i].setCentroid(clusterSumX[i]/clusters[i].getClusterSize(), clusterSumY[i]/clusters[i].getClusterSize());
-            //std::cout<<"nuovi: x:"<< clusters[i].getCentroidByPos(0)<<" y: "<<clusters[i].getCentroidByPos(1)<<std::endl;
         }
-        //std::cout<<"ci sono "<< std::endl;
 
         /*
         int somma = 0;
@@ -226,7 +220,7 @@ void SequentialKMeans::run() {
             somma += clusters[i].getSize();
         }
         */
-        //std::cout<<"elementi Clusters "<< somma << std::endl;
+
         float deltaX, deltaY = 0;
         for(int i= 0; i < K; i++)
         {
@@ -256,7 +250,7 @@ void SequentialKMeans::run() {
         iter++;
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "Tempo di esecuzione run():  " << duration.count()  << "  millisecondi" << std::endl;
+        //std::cout << "Tempo di esecuzione run():  " << duration.count()  << "  millisecondi" << std::endl;
     }
 
 
