@@ -13,52 +13,17 @@
 #include <algorithm>
 
 
-#define N 1000000
-#define TPB 2
+#define N 750000
+#define TPB 128
 static std::vector<int> used_pointIds;
 using namespace std;
-
-int* get_iteration_threads_and_blocks(int device_index, int num_data_points, int data_points_batch_size) {
-    // Gets the total number of THREADS available on the gpu
-    cudaDeviceProp deviceProp{};
-    cudaGetDeviceProperties(&deviceProp, device_index);
-    int threadsPerSM = deviceProp.maxThreadsPerMultiProcessor;
-    int SMCount = deviceProp.multiProcessorCount;
-    int TOTAL_THREADS = threadsPerSM * SMCount;
-
-    // This is the number of threads that will always be left unused so that the OS and the graphical environment
-    // can work correctly.
-    // This assumes the current process to be the only one making intensive operations on the GPU
-    int FREE_THREADS = TOTAL_THREADS * 30 / 100;
-    int AVAILABLE_THREADS = TOTAL_THREADS - FREE_THREADS;
-    // Number of THREADS per block
-    int THREADS = 256;
-    int block_data_size = num_data_points + THREADS - 1;
-    int cluster_iterations = 1;
-    // Used to handle any number of data_points dynamically
-    if(data_points_batch_size > 0 && num_data_points > data_points_batch_size || num_data_points > AVAILABLE_THREADS) {
-        if(data_points_batch_size > AVAILABLE_THREADS || data_points_batch_size <= 0 && num_data_points > AVAILABLE_THREADS)
-            data_points_batch_size = ((AVAILABLE_THREADS / THREADS) - 2) * THREADS;
-
-        block_data_size = data_points_batch_size + THREADS - 1;
-    } else {
-        data_points_batch_size = num_data_points;
-    }
-
-    cluster_iterations = std::ceil(static_cast<double>(num_data_points) / static_cast<double>(data_points_batch_size));
-    // Every element remaining after dividing is allocated to an additional block
-    int BLOCKS = block_data_size / THREADS;
-
-    return new int[5]{THREADS, BLOCKS, cluster_iterations, TOTAL_THREADS, data_points_batch_size};
-}
-
 
 __host__ void readPoints(float *h_xval, float *h_yval, int* h_clusters) {
 
     std::string tmp = "";
     string line;
     //std::cout << std::filesystem::current_path().string()  << std::endl;
-    ifstream infile("../cmake-build-debug/input1.txt");
+    ifstream infile("../cmake-build-debug/inputG.txt");
     if (!infile.is_open()) {
         cout << "Error: Failed to open file." << endl;
         return;
@@ -118,32 +83,48 @@ std::vector<int>indexGenerator(int K, int total_points){
     }
     return used_pointIds;
 }
-__global__ void clusterAssignment(const float *d_xval, const float *d_yval, int *d_clusterval, const float *d_centroidX, const float *d_centroidY, int K, bool *d_done){
-    const int idx = blockIdx.x*blockDim.x + threadIdx.x;
+__global__ void clusterAssignment(const float *d_xval, const float *d_yval, int *d_clusterval, const float *d_centroidX, const float *d_centroidY, int K, bool *d_done,
+                                  float *d_clusterSumX, float *d_clusterSumY,
+                                  int *d_clusterSize) {
+    const int idx = blockIdx.x * blockDim.x + threadIdx.x;
     *d_done = true;
     if (idx >= N) return;
     float min_dist = INFINITY;
     int closest_centroid = 0;
 
     float dist;
-    for(int i = 0; i < K; i++)
-    {
+    for (int i = 0; i < K; i++) {
         float sum = 0.0;
         sum += pow(d_centroidX[i] - d_xval[idx], 2.0);
         sum += pow(d_centroidY[i] - d_yval[idx], 2.0);
         dist = sqrt(sum);
-        if(dist < min_dist){
+        if (dist < min_dist) {
             min_dist = dist;
             closest_centroid = i;
         }
     }
     //assegno id-cluster al thread corrente
-    if( d_clusterval[idx] != closest_centroid) {
+    if (d_clusterval[idx] != closest_centroid) {
         d_clusterval[idx] = closest_centroid;
         *d_done = false;
     }
-}
 
+    //indice del thread a livello grid
+
+    //const int idx1 = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (idx >= N) return;
+}
+/*
+    int clusterId = d_clusterval[idx];
+    //sommo tutti i punti appartenenti ai clusters
+    atomicAdd(&(d_clusterSumX[clusterId]), d_xval[idx]);
+    atomicAdd(&(d_clusterSumY[clusterId]), d_yval[idx]);
+    atomicAdd(&(d_clusterSize[clusterId]), 1);
+}
+*/
+
+//FUNZIONE BUONA
 __global__ void clusterPointsSum(float* d_xval, float* d_yval, int* d_clusterVal, float* d_clusterSumX, float* d_clusterSumY, int* d_clusterSize){
     //indice del thread a livello grid
 
@@ -256,7 +237,7 @@ void ParallelKMeans::run() {
 
         h_clusterVal[used_pointIds[i]] = i;
         h_clusterSize[i] = 0;
-        std::cout<<"init: x:"<< h_centroidX[i]<<" y: "<<h_centroidY[i]<<std::endl;
+        //std::cout<<"init: x:"<< h_centroidX[i]<<" y: "<<h_centroidY[i]<<std::endl;
     }
     std::cout << "Clusters Inizializzati = " << std::endl
               << std::endl;
@@ -265,6 +246,7 @@ void ParallelKMeans::run() {
 
     int iter = 1;
     *h_done = true;
+
     //copia host -> device
 
     cudaMemcpy(d_xval, h_xval, N * sizeof(float), cudaMemcpyHostToDevice);
@@ -280,7 +262,13 @@ void ParallelKMeans::run() {
 
         std::cout << "Iter - " << iter << "/" << iters << std::endl;
         bool done = true;
-        clusterAssignment<<<(N + TPB - 1) / TPB, TPB>>>(d_xval, d_yval, d_clusterVal, d_centroidX, d_centroidY, K, d_done);
+        //spostato
+        /*
+        cudaMemset(d_clusterSumX, 0.0, K * sizeof(float));
+        cudaMemset(d_clusterSumY, 0.0, K * sizeof(float)); */
+        //
+        clusterAssignment<<<(N + TPB - 1) / TPB, TPB>>>(d_xval, d_yval, d_clusterVal, d_centroidX, d_centroidY, K, d_done, d_clusterSumX, d_clusterSumY,
+                                                        d_clusterSize);
 
         //setto a 0 la sommma dei punti appartenenti ai cluster, per iniziare aggiornamento centroide
         cudaMemset(d_clusterSumX, 0.0, K * sizeof(float));
@@ -331,7 +319,7 @@ void ParallelKMeans::run() {
             h_prevCentroidY[i] = h_centroidY[i];
 
         }
-        if (done || iter >= iters) {
+        if (done){ //|| iter >= iters) {
             std::cout << "Clustering completed in iteration : " << iter << std::endl
                       << std::endl;
             break;
@@ -400,10 +388,11 @@ void ParallelKMeans::run() {
 
 float averageParallelExecutions(int K, int iters, std::string output_dir, std::string input_dir, std::vector<int> used_pointIds)
 {
+    int numTest = 1;
     float mediaS, mediaP;
     float sum;
 
-    for(int i  = 0; i < 3; i++ ) {
+    for(int i  = 0; i < numTest; i++ ) {
         auto start = std::chrono::high_resolution_clock::now();
         ParallelKMeans kmeans(K, iters, output_dir, input_dir, used_pointIds);
         //kmeans.run_parallel2(all_points);
@@ -417,16 +406,17 @@ float averageParallelExecutions(int K, int iters, std::string output_dir, std::s
         std::cout << "<<------------------------------>>" << std::endl;
 
     }
-    mediaP = static_cast<float>(sum)/3;
+    mediaP = static_cast<float>(sum)/numTest;
     return mediaP;
 }
 
 float averageSeqExecutions(int K, int iters, std::string output_dir, std::string input_dir, std::vector<int> used_pointIds)
 {
+    int numTest = 1;
     float mediaS;
     float sum;
 
-    for(int i  = 0; i < 3; i++ ) {
+    for(int i  = 0; i < numTest; i++ ) {
         auto start = std::chrono::high_resolution_clock::now();
         SequentialKMeans kmeans(K, iters, output_dir, input_dir, used_pointIds);
         kmeans.run();
@@ -439,15 +429,15 @@ float averageSeqExecutions(int K, int iters, std::string output_dir, std::string
         std::cout << "<<------------------------------>>" << std::endl;
 
     }
-    mediaS = static_cast<float>(sum)/3;
+    mediaS = static_cast<float>(sum)/numTest;
     return mediaS;
 }
 
 int main() {
     std::string output_dir = "../cmake-build-debug/cluster_details";   //dir output
-    int K = 4;                               //numero cluster
-    std::string input_dir= "input1.txt";
-
+    int K = 15;                               //numero cluster
+    std::string input_dir= "inputG.txt";
+    std::cout<<input_dir<<std::endl;
     // Avvio il clustering
     int iters = 100;
 
@@ -455,7 +445,7 @@ int main() {
     auto mediaS = averageSeqExecutions(K, iters, output_dir, input_dir, used_pointIds);
     auto mediaP = averageParallelExecutions(K, iters, output_dir, input_dir, used_pointIds);
     std::cout << "Media esecuzione Sequenziale : " << mediaS << std::endl;
-    //std::cout << "Media esecuzione Parallela : " << mediaP << std::endl;
+    std::cout << "Media esecuzione Parallela : " << mediaP << std::endl;
 
     float speedup = static_cast<float>(mediaS) / static_cast<float>(mediaP);
     std::cout << "Speedup: " << speedup << std::endl;

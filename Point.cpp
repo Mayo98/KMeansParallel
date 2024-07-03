@@ -16,7 +16,7 @@ void Point::lineToVec(std::string& dir) {
     std::string tmp = "";
     string line;
     //std::cout << std::filesystem::current_path().string() <<"Ciao" << std::endl;
-    ifstream infile("../cmake-build-debug/input1.txt");
+    ifstream infile("../cmake-build-debug/inputG.txt");
     if (!infile.is_open()) {
         cout << "Error: Failed to open file." << endl;
         return;

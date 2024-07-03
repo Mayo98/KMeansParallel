@@ -78,11 +78,12 @@ void SequentialKMeans::run() {
     std::vector<float>prevCentroidsX;
     std::vector<float>prevCentroidsY;
     //std::cout<<"dimensione all_points: "<<total_points<<" dimensione clusters: "<<all_points.getDimClusters()<<" punto 1: "<<all_points.getYval(1)<< std::endl;
-    // Inizializzo Clusters
+
     //std::vector<int> used_pointIds;  //mem punti gia usati per init cluster
 
     float x, y;
 
+    // Inizializzo Clusters
     //used_pointIds = index_Generator(K, total_points);
     for (int i = 0; i < K; i++) {
 
@@ -92,7 +93,7 @@ void SequentialKMeans::run() {
         //Cluster cluster(i,used_pointIds[i], x, y);  //creo un cluster avente centroide il punto attuale
         Cluster cluster(i, x, y);
         //cluster.addPoint();
-        std::cout<<"init: x:"<< cluster.getCentroidByPos(0)<<" y: "<<cluster.getCentroidByPos(1)<<std::endl;
+        //std::cout<<"init: x:"<< cluster.getCentroidByPos(0)<<" y: "<<cluster.getCentroidByPos(1)<<std::endl;
         prevCentroidsX.push_back(x);
         prevCentroidsY.push_back((y));
         clusters.push_back(cluster);
@@ -117,26 +118,7 @@ void SequentialKMeans::run() {
         bool done = true;
 
         // Aggiungo punti al cluster più vicino
-        int j = 0;
-//#pragma omp parallel for reduction(&&: done) num_threads(16)
-/*
-        for (int i = 0; i < total_points; i++) {
-            int currentClusterId = all_points.getCluster(i);   //ottengo clusterID punto corrente
-            int nearestClusterId = getNearestClusterId(i);  //cluster più vicino
 
-            //se il cluster del punto != dal cluster più vicino, setto sul punto il cluster giusto
-            if (currentClusterId != nearestClusterId) {
-                j++;
-                all_points.setCluster(i, nearestClusterId);
-                clusters[nearestClusterId].addPoint(i);
-                if(currentClusterId != -1) {  //rimuovo l'indice punto dal cluster precedente
-                    clusters[currentClusterId].removePoint(i);
-                }
-                //done = false;
-
-            }
-        }
-        */
         for (int i = 0; i < total_points; i++) {
             int currentClusterId = all_points.getCluster(i);   //ottengo clusterID punto corrente
             int nearestClusterId = getNearestClusterId(i);  //cluster più vicino
