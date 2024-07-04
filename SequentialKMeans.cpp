@@ -92,8 +92,6 @@ void SequentialKMeans::run() {
         all_points.setCluster(used_pointIds[i], i);
         //Cluster cluster(i,used_pointIds[i], x, y);  //creo un cluster avente centroide il punto attuale
         Cluster cluster(i, x, y);
-        //cluster.addPoint();
-        //std::cout<<"init: x:"<< cluster.getCentroidByPos(0)<<" y: "<<cluster.getCentroidByPos(1)<<std::endl;
         prevCentroidsX.push_back(x);
         prevCentroidsY.push_back((y));
         clusters.push_back(cluster);
@@ -107,6 +105,7 @@ void SequentialKMeans::run() {
     int iter = 1;
     std::vector<float>clusterSumX;
     std::vector<float>clusterSumY;
+
     for(int i = 0; i<K; i++){
         clusterSumX.push_back(0);
         clusterSumY.push_back(0);
@@ -126,11 +125,11 @@ void SequentialKMeans::run() {
             //se il cluster del punto != dal cluster più vicino, setto sul punto il cluster giusto
             if (currentClusterId != nearestClusterId) {
                 all_points.setCluster(i, nearestClusterId);
-                //clusters[nearestClusterId].addPoint();
+                clusters[nearestClusterId].addPoint();
                 if(currentClusterId != -1) {  //rimuovo l'indice punto dal cluster precedente
-                    //clusters[currentClusterId].removePoint();
+                    clusters[currentClusterId].removePoint();
                 }
-                done = false;
+                //done = false;
 
             }
         }
@@ -174,11 +173,13 @@ void SequentialKMeans::run() {
             clusterId = all_points.getCluster(i);
             clusterSumX[clusterId] += x;
             clusterSumY[clusterId] += y;
-            clusters[clusterId].addPoint();
+            //clusters[clusterId].addPoint();
         }
+
 
         for(int i = 0; i <K; i++)
         {
+            //std::cout<<"Cluster Size: "<< clusters[i].getId()<<" -> "<<clusters[i].getClusterSize()<<std::endl;
             clusters[i].setCentroid(clusterSumX[i]/clusters[i].getClusterSize(), clusterSumY[i]/clusters[i].getClusterSize());
         }
 
@@ -220,11 +221,12 @@ void SequentialKMeans::run() {
         for (int i = 0; i < K; i++) {
             prevCentroidsX[i] = clusters[i].getCentroidByPos(0);
             prevCentroidsY[i] = clusters[i].getCentroidByPos(1);
-            clusters[i].setSize(0);
+            //clusters[i].setSize(0);
         }
 
         //interrompo se clustering completo o num iterazioni raggiunto
-        if (done || iter >= iters) {
+        //if (done || iter >= iters) {
+        if (iter >= iters) {
             std::cout << "Clustering completed in iteration : " << iter << std::endl
                       << std::endl;
             break;

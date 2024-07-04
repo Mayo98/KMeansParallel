@@ -48,47 +48,14 @@ void Point::lineToVec(std::string& dir) {
          << endl;
     std::cout << "Punti totali letti : " << xval.size() << std::endl;
 
-    /* // Esco se ho più cluster che punti
-     if ((int) xval.size() < K) {
-         cout << "Errore: Numero di clusters maggiore del numero di punti." << endl;
-         return 1;
-     }*/
 
 }
-/*
- for (int i = 0; i < static_cast<int>(line.length()); i++)
-{
-if ((48 <= static_cast<int>(line[i]) && static_cast<int>(line[i]) <= 57) || line[i] == '.' || line[i] == '+' || line[i] == '-' || line[i] == 'e')
-{
-    tmp += line[i];
-}
-else if (!tmp.empty())
-{
-    float value = std::stod(tmp);
-    xval.push_back(value);
-    tmp = ""; // Reimposta tmp dopo aver salvato il valore in xval
-
-    // Aggiungi qui la logica per salvare il valore in yval, se necessario
-}
-}
-
-if (!tmp.empty())
-{
-    float value = std::stod(tmp);
-    yval.push_back(value);
-    tmp = ""; // Reimposta tmp dopo aver salvato il valore in yval
-}
-
-*/
-
-
 
 Point::Point(std::string dir)
 {
     this->lineToVec(dir);
     dimensions = xval.size();
 
-    //this->initCluster(dimensions);
 }
 
 int Point::getNumPoints()

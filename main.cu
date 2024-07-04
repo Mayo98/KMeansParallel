@@ -13,8 +13,8 @@
 #include <algorithm>
 
 
-#define N 750000
-#define TPB 128
+#define N 999990
+#define TPB 32
 static std::vector<int> used_pointIds;
 using namespace std;
 
@@ -40,7 +40,6 @@ __host__ void readPoints(float *h_xval, float *h_yval, int* h_clusters) {
 
                 h_xval[j] = std::stod(tmp);
 
-                //xval.push_back(std::stod(tmp));
                 tmp = "";
             }
         }
@@ -85,49 +84,55 @@ std::vector<int>indexGenerator(int K, int total_points){
 }
 __global__ void clusterAssignment(const float *d_xval, const float *d_yval, int *d_clusterval, const float *d_centroidX, const float *d_centroidY, int K, bool *d_done,
                                   float *d_clusterSumX, float *d_clusterSumY,
-                                  int *d_clusterSize) {
-    const int idx = blockIdx.x * blockDim.x + threadIdx.x;
+                                  int *d_clusterSize){
+
+    //indice del thread a livello grid
+    const int idx = blockIdx.x*blockDim.x + threadIdx.x;
     *d_done = true;
     if (idx >= N) return;
     float min_dist = INFINITY;
     int closest_centroid = 0;
 
     float dist;
-    for (int i = 0; i < K; i++) {
+    for(int i = 0; i < K; i++)
+    {
         float sum = 0.0;
         sum += pow(d_centroidX[i] - d_xval[idx], 2.0);
         sum += pow(d_centroidY[i] - d_yval[idx], 2.0);
         dist = sqrt(sum);
-        if (dist < min_dist) {
+        if(dist < min_dist){
             min_dist = dist;
             closest_centroid = i;
         }
     }
+
     //assegno id-cluster al thread corrente
-    if (d_clusterval[idx] != closest_centroid) {
+    if( d_clusterval[idx] != closest_centroid) {
         d_clusterval[idx] = closest_centroid;
         *d_done = false;
     }
 
-    //indice del thread a livello grid
+
 
     //const int idx1 = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (idx >= N) return;
-}
+
 /*
     int clusterId = d_clusterval[idx];
     //sommo tutti i punti appartenenti ai clusters
     atomicAdd(&(d_clusterSumX[clusterId]), d_xval[idx]);
     atomicAdd(&(d_clusterSumY[clusterId]), d_yval[idx]);
     atomicAdd(&(d_clusterSize[clusterId]), 1);
+    if (idx >= N) return;
+    */
 }
-*/
+
 
 //FUNZIONE BUONA
-__global__ void clusterPointsSum(float* d_xval, float* d_yval, int* d_clusterVal, float* d_clusterSumX, float* d_clusterSumY, int* d_clusterSize){
-    //indice del thread a livello grid
 
+__global__ void clusterPointsSum(float* d_xval, float* d_yval, int* d_clusterVal, float* d_clusterSumX, float* d_clusterSumY, int* d_clusterSize){
+
+    //indice del thread a livello grid
     const int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (idx >= N) return;
@@ -221,23 +226,16 @@ void ParallelKMeans::run() {
 
     dimensions = 2;   //dimensione punto
 
-    //std::cout<<"dimensione all_points: "<<total_points<<" dimensione clusters: "<<all_points.getDimClusters()<<" punto 1: "<<all_points.getYval(1)<< std::endl;
+
     // Inizializzo Clusters
-    //std::vector<int> used_pointIds;//mem punti gia usati per init cluster
 
-    bool exit = false;
-    float x, y;
-
-    //used_pointIds = indexGenerator(K, N);
     for (int i = 0; i < K; i++) {
 
         h_centroidX[i] = h_xval[used_pointIds[i]];
         h_centroidY[i] = h_yval[used_pointIds[i]];
 
-
         h_clusterVal[used_pointIds[i]] = i;
         h_clusterSize[i] = 0;
-        //std::cout<<"init: x:"<< h_centroidX[i]<<" y: "<<h_centroidY[i]<<std::endl;
     }
     std::cout << "Clusters Inizializzati = " << std::endl
               << std::endl;
@@ -261,16 +259,18 @@ void ParallelKMeans::run() {
     while (true) {
 
         std::cout << "Iter - " << iter << "/" << iters << std::endl;
-        bool done = true;
+        //bool done = true;
         //spostato
         /*
         cudaMemset(d_clusterSumX, 0.0, K * sizeof(float));
-        cudaMemset(d_clusterSumY, 0.0, K * sizeof(float)); */
+        cudaMemset(d_clusterSumY, 0.0, K * sizeof(float));
+         */
         //
         clusterAssignment<<<(N + TPB - 1) / TPB, TPB>>>(d_xval, d_yval, d_clusterVal, d_centroidX, d_centroidY, K, d_done, d_clusterSumX, d_clusterSumY,
                                                         d_clusterSize);
 
         //setto a 0 la sommma dei punti appartenenti ai cluster, per iniziare aggiornamento centroide
+
         cudaMemset(d_clusterSumX, 0.0, K * sizeof(float));
         cudaMemset(d_clusterSumY, 0.0, K * sizeof(float));
 
@@ -297,8 +297,6 @@ void ParallelKMeans::run() {
         cudaMemcpy(d_centroidY, h_centroidY, K * sizeof(float), cudaMemcpyHostToDevice);
 
 
-
-
         float deltaX, deltaY = 0;
         for(int i= 0; i < K; i++)
         {
@@ -309,7 +307,7 @@ void ParallelKMeans::run() {
                 //std::cout<< "perX: "<< percentageShiftX << " percY: "<< percentageShiftY<< std::endl;
                 if(percentageShiftX > max_tollerance || percentageShiftY > max_tollerance)
                 {
-                    done = false;
+                    //done = false;
 
                 }
             }
@@ -319,7 +317,7 @@ void ParallelKMeans::run() {
             h_prevCentroidY[i] = h_centroidY[i];
 
         }
-        if (done){ //|| iter >= iters) {
+        if (iter >= iters) { //done){ //||
             std::cout << "Clustering completed in iteration : " << iter << std::endl
                       << std::endl;
             break;
@@ -388,7 +386,7 @@ void ParallelKMeans::run() {
 
 float averageParallelExecutions(int K, int iters, std::string output_dir, std::string input_dir, std::vector<int> used_pointIds)
 {
-    int numTest = 1;
+    float numTest = 2;
     float mediaS, mediaP;
     float sum;
 
@@ -398,10 +396,11 @@ float averageParallelExecutions(int K, int iters, std::string output_dir, std::s
         //kmeans.run_parallel2(all_points);
         kmeans.run();
         //float end = omp_get_wtime( );
+
         auto end = std::chrono::high_resolution_clock::now();
 
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "Tempo di esecuzione parallela: " << duration.count() << " millisecondi" << std::endl;
+        std::cout << "Tempo di esecuzione Parallela: " << duration.count() << " millisecondi" << std::endl;
         sum += static_cast<float>(duration.count());
         std::cout << "<<------------------------------>>" << std::endl;
 
@@ -412,7 +411,7 @@ float averageParallelExecutions(int K, int iters, std::string output_dir, std::s
 
 float averageSeqExecutions(int K, int iters, std::string output_dir, std::string input_dir, std::vector<int> used_pointIds)
 {
-    int numTest = 1;
+    float numTest = 2;
     float mediaS;
     float sum;
 
